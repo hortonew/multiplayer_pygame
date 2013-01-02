@@ -33,6 +33,7 @@ class Server():
 			print >>sys.stderr, 'connection from', client_address
 		finally:
 			connection.close()
+			print 'Connection from %s closed.' % client_address
 
 	def start(self, fps=0):
 		self.running = True

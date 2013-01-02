@@ -27,7 +27,6 @@ class Client():
 		server_address = (self.serverip, 1337)
 		print >>sys.stderr, 'connecting to server'
 		self.sock.connect(server_address)
-		self.name = raw_input("What is your username?\n\n")
 		print "\n-----------------------\n\n"
 	
 	def keyDown(self, key):
