@@ -40,20 +40,19 @@ class Client():
 			self.sock.sendall('d')
 	
 	def handleEvents(self):
-		keys = pygame.key.get_pressed()
-		if keys[K_w]:
-			self.keyDown(K_w)
-		elif keys[K_s]:
-			self.keyDown(K_s)
-		elif keys[K_a]:
-			self.keyDown(K_a)
-		elif keys[K_d]:
-			self.keyDown(K_d)
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				self.running = False
 			elif event.type == pygame.KEYDOWN:
-				if event.key == pygame.K_ESCAPE:
+				if event.key == pygame.K_w:
+					self.keyDown(K_w)
+				elif event.key == pygame.K_s:
+					self.keyDown(K_s)
+				elif event.key == pygame.K_a:
+					self.keyDown(K_a)
+				elif event.key == pygame.K_d:
+					self.keyDown(K_d)
+				elif event.key == pygame.K_ESCAPE:
 					self.running = False
 			
 	def start(self, fps=0):
