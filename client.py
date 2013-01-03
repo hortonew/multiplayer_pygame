@@ -1,6 +1,6 @@
 import pygame
 from pygame.locals import *
-import socket
+from gevent import socket
 import sys
 
 WINDOW_SIZE = (800, 600)
@@ -21,23 +21,23 @@ class Client():
 		print "Client IP: %s" % self.ip
 		#self.serverip = raw_input("What is the server IP address?\n\n")
 		self.serverip = '192.168.1.100'
+		self.serverport = '1337'
 		print "\n-----------------------\n\n"
 		
-		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		server_address = (self.serverip, 1337)
-		print >>sys.stderr, 'connecting to server'
-		self.sock.connect(server_address)
-		print "\n-----------------------\n\n"
 	
 	def keyDown(self, key):
 		if key == K_w:
 			print 'w'
+			self.sock.send('w')
 		if key == K_a:
 			print 'a'
+			self.sock.send('a')
 		if key == K_s:
 			print 's'
+			self.sock.send('s')
 		if key == K_d:
 			print 'd'
+			self.sock.sendall('d')
 	
 	def handleEvents(self):
 		keys = pygame.key.get_pressed()
@@ -60,10 +60,12 @@ class Client():
 		self.running = True
 		self.fps = fps
 		
+		self.sock = socket.create_connection((self.serverip, self.serverport))
 		while self.running:
 			self.handleEvents()
 			pygame.display.flip()
 			self.clock.tick(self.fps)
+		
 		self.sock.close()
 		pygame.quit()
 		sys.exit()
