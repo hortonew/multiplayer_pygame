@@ -20,12 +20,12 @@ class Server():
 		while True:
 			line = fp.read(1)
 			if line:
-				print address, line
+				print address[0], line
 			else:
 				break
 		sock.shutdown(socket.SHUT_WR)
 		sock.close()
-		print "Closing...", address
+		print "Closing...", address[0]
 		
 	def newCharacter(self, n, i):
 		ch = Character.Character()
