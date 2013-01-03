@@ -18,16 +18,14 @@ class Server():
 	def echo(self, sock, address):
 		fp = sock.makefile()
 		while True:
-			line = fp.readline()
+			line = fp.read(1)
 			if line:
-				print address
-				print line
-				fp.write(line)
-				fp.flush()
+				print address, line
 			else:
 				break
 		sock.shutdown(socket.SHUT_WR)
 		sock.close()
+		print "Closing...", address
 		
 	def newCharacter(self, n, i):
 		ch = Character.Character()
