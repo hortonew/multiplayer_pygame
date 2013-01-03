@@ -1,16 +1,10 @@
 class Character():
-	def __init__(self):
-		#self.name = ""
-		self.ip = ""
+	def __init__(self, id, ip):
+		self.id = id
+		self.ip = ip
+
+	def getID():
+		return self.id
 		
-	#def setName(n):
-		#self.name = n
-		
-	def setIP(i):
-		self.ip = i
-		
-	#def getName():
-		#return self.name
-	
 	def getIP():
 		return self.ip

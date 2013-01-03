@@ -15,23 +15,28 @@ class Server():
 		
 		self.chs = Characters.Characters()
 		
-	def echo(self, sock, address):
+	def update():
+		pass
+	
+	def clientConnect(self, sock, address):
+		l = len(self.chs.character_list)
+		newch = self.newCharacter(l+1, address[0])
+		self.chs.addCharacter(newch)
+
 		fp = sock.makefile()
 		while True:
 			line = fp.read(1)
 			if line:
-				print address[0], line
+				print l, " - IP: ", address[0], ". Port: ", address[1], ". ", line
 			else:
 				break
 		sock.shutdown(socket.SHUT_WR)
 		sock.close()
+		self.chs.removeCharacter(newch)
 		print "Closing...", address[0]
 		
-	def newCharacter(self, n, i):
-		ch = Character.Character()
-		ch.setName(n)
-		ch.setIP(i)
-		
+	def newCharacter(self, id, ip):
+		ch = Character.Character(id, ip)
 		return ch
 		
 	def handleEvents(self):
@@ -40,7 +45,7 @@ class Server():
 	def start(self, fps=0):
 		self.running = True
 		self.fps = fps
-		server = StreamServer( ('', 1337), self.echo)
+		server = StreamServer( ('', 1337), self.clientConnect)
 		server.serve_forever()
 		
 		while self.running:
