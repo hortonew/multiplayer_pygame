@@ -1,8 +1,8 @@
 import pygame
 from pygame.locals import *
-import socket
 from classes import Character, Characters
-import sys
+from gevent import socket
+from gevent.server import StreamServer
 
 class Server():
 	def __init__(self):
@@ -11,14 +11,23 @@ class Server():
 		pygame.init()
 		
 		self.ip = self.ip = socket.gethostbyname(socket.gethostname())
+		print "Starting server: %s:1337" % self.ip
 		
 		self.chs = Characters.Characters()
 		
-		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		server_address = (self.ip, 1337)
-		print >> sys.stderr, 'Starting server'
-		self.sock.bind(server_address)
-		self.sock.listen(1)
+	def echo(self, sock, address):
+		fp = sock.makefile()
+		while True:
+			line = fp.readline()
+			if line:
+				print address
+				print line
+				fp.write(line)
+				fp.flush()
+			else:
+				break
+		sock.shutdown(socket.SHUT_WR)
+		sock.close()
 		
 	def newCharacter(self, n, i):
 		ch = Character.Character()
@@ -28,20 +37,16 @@ class Server():
 		return ch
 		
 	def handleEvents(self):
-		connection, client_address = self.sock.accept()
-		try:
-			print >>sys.stderr, 'connection from', client_address
-		finally:
-			connection.close()
-			print 'Closed connection from', client_address
+		pass
 
 	def start(self, fps=0):
 		self.running = True
 		self.fps = fps
+		server = StreamServer( ('', 1337), self.echo)
+		server.serve_forever()
 		
 		while self.running:
 			self.handleEvents()
-			
 			self.clock.tick(self.fps)
 			
 fps = 30
