@@ -2,13 +2,49 @@ import pygame
 from pygame.locals import *
 from gevent import socket
 import sys
+from twisted.internet import reactor, protocol
+from twisted.internet.task import LoopingCall
 
+DESIRED_FPS = 30.0
 WINDOW_SIZE = (800, 600)
+
+class EchoClient(protocol.Protocol):
+	def __init__(self, d):
+		print 'client says %s' % d
+
+	def connectionMade(self):
+		print "connected"
+		self.transport.write("hello, world!")
+		self.transport.loseConnection()	
+
+	def dataReceived(self, data):
+		#As soon as any data is received, write it back.
+		print "Server said:", data
+
+	def connectionLost(self, reason):
+		print "connection lost"
+		
+
+class EchoFactory(protocol.ClientFactory):
+
+	def __init__(self, d):
+		self.data = d
+	
+	#uses EchoClient as the protocol, allowing the passing of parameters 
+	#could have just done protocol=EchoClient
+	def buildProtocol(self, addr):
+		return EchoClient(self.data)
+
+	def clientConnectionFailed(self, connector, reason):
+		print "Connection failed - shutting down!"
+		reactor.stop()
+
+	def clientConnectionLost(self, connector, reason):
+		print "Connection lost - disconnecting!"
+		#reactor.stop()
 
 class Client():
 	def __init__(self):
-		self.running = False
-		self.clock = pygame.time.Clock()
 		pygame.init()
 		
 		self.screen = pygame.display.set_mode(WINDOW_SIZE)
@@ -28,16 +64,19 @@ class Client():
 	def keyDown(self, key):
 		if key == K_w:
 			print 'w'
-			self.sock.send('w')
+			command = 'w'
 		if key == K_a:
 			print 'a'
-			self.sock.send('a')
+			command = 'a'
 		if key == K_s:
 			print 's'
-			self.sock.send('s')
+			command = 's'
 		if key == K_d:
 			print 'd'
-			self.sock.sendall('d')
+			command = 'd'
+			
+		f = EchoFactory(command)
+		reactor.connectTCP("192.168.1.100", 1337, f)
 	
 	def handleEvents(self):
 		for event in pygame.event.get():
@@ -53,22 +92,24 @@ class Client():
 				elif event.key == pygame.K_d:
 					self.keyDown(K_d)
 				elif event.key == pygame.K_ESCAPE:
-					self.running = False
-			
-	def start(self, fps=0):
-		self.running = True
-		self.fps = fps
+					pygame.quit()
+					sys.exit()
+					
+	def game_tick(self):
+		#print 'tick'
+		self.handleEvents()
+		self.draw()
 		
-		self.sock = socket.create_connection((self.serverip, self.serverport))
-		while self.running:
-			self.handleEvents()
-			pygame.display.flip()
-			self.clock.tick(self.fps)
-		
-		self.sock.close()
-		pygame.quit()
-		sys.exit()
+	def draw(self):
+		pygame.display.flip()
 			
-fps = 30
+	def start(self):
+
+		#twisted clock
+		tick = LoopingCall(self.game_tick)
+		tick.start(1.0 / DESIRED_FPS)
+
+		reactor.run()
+
 c = Client()
-c.start(fps)
+c.start()

@@ -1,7 +1,22 @@
 from classes import Character, Characters
 from gevent import socket
 from gevent.server import StreamServer
+from twisted.internet import reactor, protocol
 
+class Echo(protocol.Protocol):
+	#Client makes connection
+	def connectionMade(self):
+		print 'connected'
+		
+	#Client loses connection
+	def connectionLost(self, reason):
+		print 'lost connection'
+		
+	#Data from client received
+	def dataReceived(self, data):
+		self.transport.write(data)
+		print data
+		
 class Server():
 	def __init__(self):
 		
@@ -15,6 +30,7 @@ class Server():
 	def update():
 		pass
 	
+	'''
 	def clientConnect(self, sock, address):
 		l = len(self.chs.character_list)
 		newch = self.newCharacter(l+1, address[0])
@@ -33,7 +49,8 @@ class Server():
 		sock.close()
 		self.chs.removeCharacter(newch)
 		print "Closing connection to: ", address[0]
-		
+	'''
+	
 	#return character object
 	def newCharacter(self, id, ip):
 		ch = Character.Character(id, ip)
@@ -41,8 +58,12 @@ class Server():
 
 	#start server
 	def start(self):
-		server = StreamServer( ('', 1337), self.clientConnect)
-		server.serve_forever()
+		#server = StreamServer( ('', 1337), self.clientConnect)
+		#server.serve_forever()
+		factory = protocol.ServerFactory()
+		factory.protocol = Echo
+		reactor.listenTCP(1337,factory)
+		reactor.run()
 			
 s = Server()
 s.start()
